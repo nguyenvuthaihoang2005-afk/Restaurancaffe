@@ -1,0 +1,142 @@
+/* menu.css - Giao diện chuyên nghiệp cho trang Thực đơn */
+
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Playfair+Display:wght@700&display=swap');
+
+body {
+  font-family: 'Roboto', sans-serif;
+  background: linear-gradient(to bottom, #f8f9fa, #e9ecef);
+}
+
+.sidebar {
+  background: linear-gradient(180deg, #2c3e50, #1a252f);
+  box-shadow: 2px 0 15px rgba(0,0,0,0.4);
+}
+
+.sidebar h4 {
+  font-family: 'Playfair Display', serif;
+  color: #fff;
+  letter-spacing: 1px;
+}
+
+.sidebar a {
+  transition: all 0.3s ease;
+  border-left: 4px solid transparent;
+}
+
+.sidebar a:hover, .sidebar a.active {
+  background-color: rgba(255,255,255,0.1);
+  border-left: 4px solid #0d6efd;
+  color: #fff !important;
+  padding-left: 24px;
+}
+
+.main-content {
+  background: #fff;
+  min-height: 100vh;
+}
+
+.card {
+  border: none;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 5px 25px rgba(0,0,0,0.08);
+}
+
+.card-header {
+  background: linear-gradient(90deg, #0d6efd, #0b5ed7);
+  font-weight: 500;
+}
+
+.table {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.table th {
+  background: #f1f3f5;
+  font-weight: 600;
+  color: #495057;
+}
+
+.table td {
+  vertical-align: middle;
+}
+
+.menu-img {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 2px solid #e9ecef;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.menu-img:hover {
+  transform: scale(1.08);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+.upload-area {
+  border: 2px dashed #0d6efd;
+  border-radius: 12px;
+  padding: 30px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: #f8f9ff;
+  position: relative;
+}
+
+.upload-area:hover {
+  background: #e9f1ff;
+  border-color: #0056b3;
+}
+
+.upload-area.dragover {
+  background: #d4e6ff;
+  border-color: #0d6efd;
+  box-shadow: 0 0 15px rgba(13,110,253,0.3);
+}
+
+.preview-container {
+  margin-top: 15px;
+  position: relative;
+  display: inline-block;
+}
+
+.preview-img {
+  max-width: 220px;
+  max-height: 220px;
+  border-radius: 12px;
+  border: 3px solid #fff;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+}
+
+.preview-remove {
+  position: absolute;
+  top: -12px;
+  right: -12px;
+  background: #dc3545;
+  color: white;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  line-height: 32px;
+  text-align: center;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: bold;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+}
+
+.btn-primary {
+  background: linear-gradient(90deg, #0d6efd, #0b5ed7);
+  border: none;
+  transition: all 0.3s;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(13,110,253,0.3);
+}

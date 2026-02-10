@@ -1,0 +1,228 @@
+/* global-style.css - Giao diện sáng, cổ điển, dễ nhìn + nút Quay lại */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700;800&display=swap');
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css');
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: #f8f1e9; /* Kem nhạt cổ điển */
+  color: #3d2b1f;
+  line-height: 1.7;
+  min-height: 100vh;
+}
+
+/* Sidebar - Sáng & thanh lịch */
+.sidebar {
+  background: #fffaf0; /* Kem trắng nhẹ */
+  width: 260px;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  overflow-y: auto;
+  box-shadow: 2px 0 20px rgba(0,0,0,0.08);
+  border-right: 1px solid #e0d5c0;
+  z-index: 1000;
+}
+
+.sidebar h4 {
+  font-family: 'Playfair Display', serif;
+  color: #8b5e3c; /* Nâu cổ điển */
+  font-size: 1.8rem;
+  text-align: center;
+  padding: 2rem 1rem;
+  border-bottom: 1px solid #e0d5c0;
+}
+
+.sidebar a {
+  color: #5c4033;
+  padding: 1.1rem 1.5rem;
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.35s ease;
+  border-left: 4px solid transparent;
+}
+
+.sidebar a:hover,
+.sidebar a.active {
+  background: #f5e8d3;
+  color: #8b5e3c;
+  border-left: 4px solid #d4a373;
+  transform: translateX(4px);
+}
+
+.sidebar a i {
+  margin-right: 12px;
+  font-size: 1.2rem;
+  width: 24px;
+  text-align: center;
+  color: #8b5e3c;
+}
+
+/* Main Content */
+.main-content {
+  margin-left: 260px;
+  padding: 2.5rem 2rem;
+  background: #fffaf0;
+  min-height: 100vh;
+}
+
+/* Header với nút Quay lại */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.page-header h2 {
+  font-family: 'Playfair Display', serif;
+  color: #8b5e3c;
+  font-size: 2.4rem;
+  font-weight: 700;
+}
+
+/* Nút Quay lại */
+.btn-back {
+  background: linear-gradient(90deg, #d4a373, #c68e5f);
+  border: none;
+  color: white;
+  padding: 0.7rem 1.4rem;
+  border-radius: 12px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(212, 163, 115, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-back:hover {
+  background: linear-gradient(90deg, #e6b980, #d4a373);
+  transform: translateY(-3px);
+  box-shadow: 0 12px 30px rgba(212, 163, 115, 0.4);
+}
+
+/* Card */
+.card {
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 25px rgba(139, 94, 60, 0.08);
+  border: 1px solid #f0e4d0;
+  transition: all 0.4s ease;
+}
+
+.card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px rgba(139, 94, 60, 0.12);
+}
+
+.card-header {
+  background: linear-gradient(90deg, #d4a373, #c68e5f);
+  color: white;
+  padding: 1.4rem 1.8rem;
+  font-weight: 600;
+}
+
+/* Nút chức năng */
+.action-btn {
+  position: relative;
+  overflow: hidden;
+  border: none;
+  border-radius: 10px;
+  padding: 0.65rem 1.3rem;
+  font-weight: 600;
+  color: white;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.action-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+}
+
+/* Sửa - Vàng nhạt cổ điển */
+.btn-edit {
+  background: #d4a373;
+}
+
+.btn-edit:hover {
+  background: #e6b980;
+}
+
+/* Xóa - Đỏ cổ điển */
+.btn-delete {
+  background: #b45309;
+}
+
+.btn-delete:hover {
+  background: #c97a3c;
+}
+
+/* Lưu - Xanh lá nhẹ */
+.btn-save {
+  background: #6b8e23;
+}
+
+.btn-save:hover {
+  background: #8bac3e;
+}
+
+/* Thêm mới - Xanh dương nhẹ */
+.btn-add {
+  background: #4682b4;
+}
+
+.btn-add:hover {
+  background: #5f9ea0;
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+  .sidebar { width: 80px; }
+  .sidebar h4, .sidebar a span { display: none; }
+  .main-content { margin-left: 80px; }
+}/* Cải thiện vị trí nút Quay lại ở góc phải trên */
+.page-header {
+  position: relative;
+  padding-bottom: 1rem;
+}
+
+.page-header h2 {
+  margin: 0;
+  font-size: 2.2rem;
+}
+
+.btn-back {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 10;
+  padding: 0.6rem 1.2rem;
+  font-size: 0.95rem;
+  min-width: 160px;
+  text-align: center;
+}
+
+/* Responsive: trên mobile, nút xuống dưới tiêu đề */
+@media (max-width: 768px) {
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  .btn-back {
+    position: static;
+    width: 100%;
+    text-align: center;
+  }
+}

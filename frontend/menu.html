@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thực đơn - Restaurants Cafe</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="css/global-style.css">
+
+  <style>
+    .menu-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1.8rem;
+      padding: 2rem 0;
+    }
+    .menu-item {
+      background: #1e293b;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      cursor: pointer;
+    }
+    .menu-item:hover {
+      transform: translateY(-12px) scale(1.03);
+      box-shadow: 0 25px 60px rgba(96, 165, 250, 0.25);
+    }
+    .menu-item img {
+      width: 100%;
+      height: 220px;
+      object-fit: cover;
+      transition: transform 0.5s ease;
+    }
+    .menu-item:hover img {
+      transform: scale(1.08);
+    }
+    .menu-item-info {
+      padding: 1.4rem;
+      text-align: center;
+    }
+    .menu-item-info h3 {
+      font-family: 'Playfair Display', serif;
+      color: #e2e8f0;
+      font-size: 1.4rem;
+      margin-bottom: 0.6rem;
+    }
+    .menu-item-info p {
+      color: #94a3b8;
+      font-size: 0.95rem;
+      margin-bottom: 1rem;
+    }
+    .price {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #60a5fa;
+      display: block;
+    }
+    .action-btns {
+      margin-top: 1rem;
+      display: flex;
+      justify-content: center;
+      gap: 0.8rem;
+      padding-bottom: 1rem;
+    }
+    .action-btns button {
+      padding: 0.5rem 1rem;
+      font-size: 0.9rem;
+    }
+
+    /* Nút Thêm món mới đẹp hơn */
+    .btn-add-new {
+      background: linear-gradient(90deg, #28a745, #218838);
+      border: none;
+      padding: 0.7rem 1.5rem;
+      font-size: 1rem;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+    .btn-add-new:hover {
+      background: linear-gradient(90deg, #34d399, #28a745);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(40, 167, 69, 0.35);
+    }
+  </style>
+</head>
+
+<body onload="loadMenu()">
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <h4>Restaurants Cafe</h4>
+  <a href="dashboard.html">Dashboard</a>
+  <a href="users.html">Người dùng</a>
+  <a href="menu.html" class="active">Thực đơn</a>
+  <a href="tables.html">Bàn</a>
+  <a href="reservations.html">Đặt bàn</a>
+  <a href="orders.html">Đơn hàng</a>
+  <a href="promotions.html">Khuyến mãi</a>
+  <a href="invoices.html">Hóa đơn</a>
+  <a href="payments.html">Thanh toán</a>
+</div>
+
+<div class="main-content">
+  <h2>Thực đơn</h2>
+
+  <div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h5>Danh sách Món</h5>
+      <button class="btn btn-add-new" onclick="prepareAddMenu()">
+        <i class="fas fa-plus me-1"></i> Thêm món mới
+      </button>
+    </div>
+    <div class="card-body">
+      <div class="menu-grid" id="menuGrid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL THÊM / SỬA -->
+<div class="modal fade" id="menuModal" tabindex="-1" aria-labelledby="menuModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="menuModalLabel">Thêm món mới</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="menuForm" enctype="multipart/form-data">
+          <input type="hidden" id="itemId">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label fw-bold">Tên món</label>
+                <input type="text" class="form-control" id="name" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label fw-bold">Mô tả</label>
+                <textarea class="form-control" id="description" rows="4"></textarea>
+              </div>
+              <div class="mb-3">
+                <label class="form-label fw-bold">Giá (VNĐ)</label>
+                <input type="number" class="form-control" id="price" required min="1000">
+              </div>
+              <div class="mb-3">
+                <label class="form-label fw-bold">Danh mục</label>
+                <select class="form-select" id="category" required>
+                  <option value="food">Món ăn</option>
+                  <option value="drink">Đồ uống</option>
+                  <option value="dessert">Tráng miệng</option>
+                  <option value="other">Khác</option>
+                </select>
+              </div>
+              <div class="mb-3 form-check">
+                <input type="checkbox" class="form-check-input" id="is_available" checked>
+                <label class="form-check-label fw-bold" for="is_available">Còn bán</label>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label fw-bold">Ảnh món ăn</label>
+                <div class="upload-area" id="uploadArea">
+                  <p>Click hoặc kéo thả ảnh vào đây</p>
+                  <input type="file" class="d-none" id="image" accept="image/*">
+                  <div class="preview-container" id="previewContainer">
+                    <img id="preview" src="" alt="Xem trước" class="preview-img" style="display: none;">
+                    <span class="preview-remove" id="removePreview" style="display: none;" onclick="clearImage()">×</span>
+                  </div>
+                </div>
+                <small class="form-text text-muted mt-2 d-block">Định dạng: jpg, png, gif. Tối đa 5MB</small>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+        <button type="button" class="btn btn-primary" onclick="saveMenu()">Lưu</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CHI TIẾT -->
+<div class="modal fade" id="detailModal" tabindex="-1" aria-labelledby="detailModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="detailModalLabel">Chi tiết món ăn</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body row g-4 p-4">
+        <div class="col-md-6">
+          <img id="detailImage" class="img-fluid rounded shadow" style="max-height: 400px; object-fit: cover;">
+        </div>
+        <div class="col-md-6">
+          <h3 id="detailName" class="mb-3"></h3>
+          <p id="detailDescription" class="text-muted mb-4"></p>
+          <h4 class="text-primary mb-3" id="detailPrice"></h4>
+          <span class="badge fs-5 px-4 py-2" id="detailStatus"></span>
+          <p class="mt-3 text-muted">Danh mục: <strong id="detailCategory"></strong></p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+const apiUrl = 'http://localhost:3001/api/menu';
+
+async function loadMenu() {
+  try {
+    const res = await fetch(apiUrl);
+    if (!res.ok) throw new Error('Lỗi kết nối');
+    const items = await res.json();
+    const grid = document.getElementById('menuGrid');
+    grid.innerHTML = '';
+
+    items.forEach(item => {
+      const img = item.image_path
+        ? 'http://localhost:3001' + item.image_path
+        : 'https://via.placeholder.com/300x220';
+
+      const div = document.createElement('div');
+      div.className = 'menu-item';
+
+      // Gắn sự kiện click cho toàn bộ card
+      div.onclick = () => viewDetail(item);
+
+      div.innerHTML = `
+        <img src="${img}">
+        <div class="menu-item-info">
+          <h3>${item.name}</h3>
+          <p>${item.description || ''}</p>
+          <span class="price">${item.price.toLocaleString()} VNĐ</span>
+        </div>
+        <div class="action-btns">
+          <button class="btn btn-warning btn-sm" onclick="event.stopPropagation(); prepareEditMenu(${item.item_id}, '${item.name.replace(/'/g,"\\'")}', '${(item.description || '').replace(/'/g,"\\'")}', ${item.price}, '${item.category}', ${item.is_available})">
+            Sửa
+          </button>
+          <button class="btn btn-danger btn-sm" onclick="event.stopPropagation(); deleteMenu(${item.item_id})">
+            Xóa
+          </button>
+        </div>
+      `;
+      grid.appendChild(div);
+    });
+  } catch (err) {
+    console.error(err);
+    alert('Không thể tải thực đơn!');
+  }
+}
+
+function viewDetail(item) {
+  document.getElementById('detailName').textContent = item.name;
+  document.getElementById('detailDescription').textContent = item.description || 'Không có mô tả';
+  document.getElementById('detailPrice').textContent = item.price.toLocaleString() + ' VNĐ';
+  document.getElementById('detailImage').src = item.image_path
+    ? 'http://localhost:3001' + item.image_path
+    : 'https://via.placeholder.com/400x400';
+  document.getElementById('detailStatus').textContent = item.is_available ? 'Còn bán' : 'Hết món';
+  document.getElementById('detailStatus').className = item.is_available ? 'badge bg-success fs-5 px-4 py-2' : 'badge bg-danger fs-5 px-4 py-2';
+  document.getElementById('detailCategory').textContent = item.category || 'Không xác định';
+
+  new bootstrap.Modal(document.getElementById('detailModal')).show();
+}
+
+function prepareAddMenu() {
+  document.getElementById('menuModalLabel').textContent = 'Thêm món mới';
+  document.getElementById('menuForm').reset();
+  document.getElementById('itemId').value = '';
+  document.getElementById('is_available').checked = true;
+  new bootstrap.Modal(document.getElementById('menuModal')).show();
+}
+
+function prepareEditMenu(id, name, description, price, category, is_available) {
+  document.getElementById('menuModalLabel').textContent = 'Sửa món';
+  document.getElementById('itemId').value = id;
+  document.getElementById('name').value = name;
+  document.getElementById('description').value = description;
+  document.getElementById('price').value = price;
+  document.getElementById('category').value = category;
+  document.getElementById('is_available').checked = !!is_available;
+  new bootstrap.Modal(document.getElementById('menuModal')).show();
+}
+
+async function saveMenu() {
+  const id = document.getElementById('itemId').value;
+  const name = document.getElementById('name').value.trim();
+  const description = document.getElementById('description').value.trim();
+  const price = parseFloat(document.getElementById('price').value);
+  const category = document.getElementById('category').value;
+  const is_available = document.getElementById('is_available').checked ? 1 : 0;
+
+  if (!name || isNaN(price) || !category) {
+    alert('Vui lòng nhập đầy đủ thông tin!');
+    return;
+  }
+
+  const data = { name, description, price, category, is_available };
+
+  try {
+    const method = id ? 'PUT' : 'POST';
+    const url = id ? `${apiUrl}/${id}` : apiUrl;
+    const res = await fetch(url, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+
+    if (res.ok) {
+      alert(id ? 'Cập nhật thành công!' : 'Thêm món thành công!');
+      bootstrap.Modal.getInstance(document.getElementById('menuModal')).hide();
+      loadMenu(); // Reload ngay để cập nhật danh sách
+    } else {
+      alert('Lỗi khi lưu món!');
+    }
+  } catch (err) {
+    console.error(err);
+    alert('Lỗi kết nối!');
+  }
+}
+
+async function deleteMenu(id) {
+  if (!confirm('Bạn có chắc muốn xóa món này?')) return;
+  try {
+    const res = await fetch(`${apiUrl}/${id}`, { method: 'DELETE' });
+    if (res.ok) {
+      alert('Xóa thành công!');
+      loadMenu();
+    } else {
+      alert('Lỗi khi xóa!');
+    }
+  } catch (err) {
+    console.error(err);
+    alert('Lỗi kết nối!');
+  }
+}
+</script>
+</body>
+</html>

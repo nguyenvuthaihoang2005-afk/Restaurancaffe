@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Quản lý Bàn - Restaurants Cafe</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/global-style.css">
+  <style>
+    /* Copy toàn bộ style từ users.html của bạn */
+    body { background-color: #f8f9fa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    .sidebar { background-color: #343a40; color: white; height: 100vh; position: fixed; width: 250px; padding-top: 20px; }
+    .sidebar a { color: #adb5bd; padding: 15px 20px; display: block; text-decoration: none; }
+    .sidebar a:hover, .sidebar a.active { background-color: #495057; color: white; }
+    .main-content { margin-left: 250px; padding: 30px; }
+    .card-header { background-color: #0d6efd; color: white; }
+    table th { background-color: #e9ecef; }
+  </style>
+</head>
+<body onload="loadTables()">
+<!-- Page Header - Tiêu đề bên trái, nút Quay lại bên phải góc trên -->
+<div class="page-header d-flex justify-content-between align-items-center mb-4">
+  <h2>Quay lại trang chủ </h2> <!-- Thay "Thực đơn" bằng tên trang tương ứng -->
+  <a href="dashboard.html" class="btn btn-back">
+    <i class="fas fa-arrow-left me-1"></i> Quay lại Trang chủ
+  </a>
+</div>
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <h4 class="text-center mb-4">Restaurants Cafe</h4>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="users.html">Quản lý Người dùng</a>
+    <a href="menu.html">Thực đơn</a>
+    <a href="tables.html" class="active bg-primary text-white">Bàn</a>
+    <a href="reservations.html">Đặt bàn</a>
+    <a href="orders.html">Đơn hàng</a>
+    <a href="promotions.html">Khuyến mãi</a>
+    <a href="invoices.html">Hóa đơn</a>
+    <a href="payments.html">Thanh toán</a>
+  </div>
+
+  <div class="main-content">
+    <h2 class="mb-4">Quản lý Bàn</h2>
+
+    <div class="card shadow">
+      <div class="card-header">
+        <h5 class="mb-0">Danh sách Bàn</h5>
+      </div>
+      <div class="card-body">
+        <button class="btn btn-success mb-3" data-bs-toggle="modal" data-bs-target="#tableModal" onclick="prepareAddTable()">
+          + Thêm bàn mới
+        </button>
+
+        <div class="table-responsive">
+          <table class="table table-hover table-striped">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Số bàn</th>
+                <th>Sức chứa</th>
+                <th>Vị trí</th>
+                <th>Trạng thái</th>
+                <th>Hành động</th>
+              </tr>
+            </thead>
+            <tbody id="tablesBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Thêm/Sửa bàn -->
+  <div class="modal fade" id="tableModal" tabindex="-1" aria-labelledby="tableModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="tableModalLabel">Thêm bàn mới</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="tableForm">
+            <input type="hidden" id="tableId">
+            <div class="mb-3">
+              <label class="form-label">Số bàn</label>
+              <input type="text" class="form-control" id="table_number" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Sức chứa (người)</label>
+              <input type="number" class="form-control" id="capacity" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Vị trí</label>
+              <input type="text" class="form-control" id="location">
+            </div>
+            <div class="mb-3 form-check">
+              <input type="checkbox" class="form-check-input" id="is_available" checked>
+              <label class="form-check-label" for="is_available">Còn trống</label>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+          <button type="button" class="btn btn-primary" onclick="saveTable()">Lưu</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const apiUrl = 'http://localhost:3001/api/tables';
+
+    async function loadTables() {
+      try {
+        const response = await fetch(apiUrl);
+        if (!response.ok) throw new Error('Lỗi kết nối');
+        const tables = await response.json();
+        const tbody = document.getElementById('tablesBody');
+        tbody.innerHTML = '';
+
+        tables.forEach(table => {
+          const row = `
+            <tr>
+              <td>${table.table_id}</td>
+              <td>${table.table_number}</td>
+              <td>${table.capacity}</td>
+              <td>${table.location || '-'}</td>
+              <td><span class="badge ${table.is_available ? 'bg-success' : 'bg-danger'}">${table.is_available ? 'Trống' : 'Đang sử dụng'}</span></td>
+              <td>
+                <button class="btn btn-sm btn-warning me-1" onclick="prepareEditTable(${table.table_id}, '${table.table_number}', ${table.capacity}, '${table.location || ''}', ${table.is_available})">Sửa</button>
+                <button class="btn btn-sm btn-danger" onclick="deleteTable(${table.table_id})">Xóa</button>
+              </td>
+            </tr>
+          `;
+          tbody.innerHTML += row;
+        });
+      } catch (err) {
+        console.error(err);
+        alert('Không thể tải danh sách bàn!');
+      }
+    }
+
+    function prepareAddTable() {
+      document.getElementById('tableModalLabel').textContent = 'Thêm bàn mới';
+      document.getElementById('tableForm').reset();
+      document.getElementById('tableId').value = '';
+      document.getElementById('is_available').checked = true;
+    }
+
+    function prepareEditTable(id, table_number, capacity, location, is_available) {
+      document.getElementById('tableModalLabel').textContent = 'Sửa bàn';
+      document.getElementById('tableId').value = id;
+      document.getElementById('table_number').value = table_number;
+      document.getElementById('capacity').value = capacity;
+      document.getElementById('location').value = location;
+      document.getElementById('is_available').checked = !!is_available;
+      const modal = new bootstrap.Modal(document.getElementById('tableModal'));
+      modal.show();
+    }
+
+    async function saveTable() {
+      const id = document.getElementById('tableId').value;
+      const table_number = document.getElementById('table_number').value.trim();
+      const capacity = parseInt(document.getElementById('capacity').value);
+      const location = document.getElementById('location').value.trim();
+      const is_available = document.getElementById('is_available').checked ? 1 : 0;
+
+      if (!table_number || isNaN(capacity)) {
+        alert('Vui lòng nhập số bàn và sức chứa!');
+        return;
+      }
+
+      const data = { table_number, capacity, location, is_available };
+
+      try {
+        const method = id ? 'PUT' : 'POST';
+        const url = id ? `${apiUrl}/${id}` : apiUrl;
+        const response = await fetch(url, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        if (response.ok) {
+          alert(id ? 'Cập nhật thành công!' : 'Thêm thành công!');
+          bootstrap.Modal.getInstance(document.getElementById('tableModal')).hide();
+          loadTables();
+        } else {
+          alert('Lỗi khi lưu bàn!');
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Lỗi kết nối!');
+      }
+    }
+
+    async function deleteTable(id) {
+      if (!confirm('Xóa bàn này?')) return;
+      try {
+        const response = await fetch(`${apiUrl}/${id}`, { method: 'DELETE' });
+        if (response.ok) {
+          alert('Xóa thành công!');
+          loadTables();
+        } else {
+          alert('Lỗi khi xóa!');
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Lỗi kết nối!');
+      }
+    }
+  </script>
+</body>
+</html>

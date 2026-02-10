@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Hóa đơn - Restaurants Cafe</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+ <link rel="stylesheet" href="css/global-style.css">
+  <style> /* Copy style từ users.html */ </style>
+</head>
+<body onload="loadInvoices()">
+<div class="page-header">
+  <h2>[Restaurants Cafe]</h2>
+  <a href="dashboard.html" class="btn btn-back">
+    <i class="fas fa-arrow-left me-1"></i> Quay lại Trang chủ
+  </a>
+</div>
+  <!-- Sidebar (copy, active cho Hóa đơn) -->
+
+  <div class="main-content">
+    <h2 class="mb-4">Quản lý Hóa đơn</h2>
+
+    <div class="card shadow">
+      <div class="card-header">
+        <h5 class="mb-0">Danh sách Hóa đơn</h5>
+      </div>
+      <div class="card-body">
+        <button class="btn btn-success mb-3" data-bs-toggle="modal" data-bs-target="#invoiceModal" onclick="prepareAddInvoice()">
+          + Thêm hóa đơn mới
+        </button>
+        
+
+        <div class="table-responsive">
+          <table class="table table-hover table-striped">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>ID Đơn hàng</th>
+                <th>Ngày lập</th>
+                <th>Tổng tiền</th>
+                <th>Thuế</th>
+                <th>Thành tiền</th>
+                <th>Trạng thái</th>
+                <th>Hành động</th>
+              </tr>
+            </thead>
+            <tbody id="invoicesBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal fade" id="invoiceModal" tabindex="-1" aria-labelledby="invoiceModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="invoiceModalLabel">Thêm hóa đơn mới</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="invoiceForm">
+            <input type="hidden" id="invoiceId">
+            <div class="mb-3">
+              <label class="form-label">ID Đơn hàng</label>
+              <input type="number" class="form-control" id="order_id" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Tổng tiền</label>
+              <input type="number" class="form-control" id="total_amount" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Thuế</label>
+              <input type="number" class="form-control" id="tax_amount">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Trạng thái</label>
+              <select class="form-select" id="status" required>
+                <option value="unpaid">Chưa thanh toán</option>
+                <option value="paid">Đã thanh toán</option>
+                <option value="refunded">Hoàn tiền</option>
+              </select>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+          <button type="button" class="btn btn-primary" onclick="saveInvoice()">Lưu</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const apiUrl = 'http://localhost:3001/api/invoices';
+
+    async function loadInvoices() {
+      try {
+        const response = await fetch(apiUrl);
+        if (!response.ok) throw new Error('Lỗi kết nối');
+        const invoices = await response.json();
+        const tbody = document.getElementById('invoicesBody');
+        tbody.innerHTML = '';
+
+        invoices.forEach(inv => {
+          const row = `
+            <tr>
+              <td>${inv.invoice_id}</td>
+              <td>${inv.order_id}</td>
+              <td>${new Date(inv.invoice_date).toLocaleString('vi-VN')}</td>
+              <td>${inv.total_amount.toLocaleString('vi-VN')} VNĐ</td>
+              <td>${inv.tax_amount ? inv.tax_amount.toLocaleString('vi-VN') + ' VNĐ' : '0 VNĐ'}</td>
+              <td>${inv.final_amount.toLocaleString('vi-VN')} VNĐ</td>
+              <td>${inv.status}</td>
+              <td>
+                <button class="btn btn-sm btn-warning me-1" onclick="prepareEditInvoice(${inv.invoice_id}, ${inv.order_id}, ${inv.total_amount}, ${inv.tax_amount || 0}, '${inv.status}')">Sửa</button>
+                <button class="btn btn-sm btn-danger" onclick="deleteInvoice(${inv.invoice_id})">Xóa</button>
+              </td>
+            </tr>
+          `;
+          tbody.innerHTML += row;
+        });
+      } catch (err) {
+        console.error(err);
+        alert('Không thể tải danh sách hóa đơn!');
+      }
+    }
+
+    function prepareAddInvoice() {
+      document.getElementById('invoiceModalLabel').textContent = 'Thêm hóa đơn mới';
+      document.getElementById('invoiceForm').reset();
+      document.getElementById('invoiceId').value = '';
+    }
+
+    function prepareEditInvoice(id, order_id, total_amount, tax_amount, status) {
+      document.getElementById('invoiceModalLabel').textContent = 'Sửa hóa đơn';
+      document.getElementById('invoiceId').value = id;
+      document.getElementById('order_id').value = order_id;
+      document.getElementById('total_amount').value = total_amount;
+      document.getElementById('tax_amount').value = tax_amount;
+      document.getElementById('status').value = status;
+      const modal = new bootstrap.Modal(document.getElementById('invoiceModal'));
+      modal.show();
+    }
+
+    async function saveInvoice() {
+      const id = document.getElementById('invoiceId').value;
+      const order_id = document.getElementById('order_id').value;
+      const total_amount = parseFloat(document.getElementById('total_amount').value);
+      const tax_amount = parseFloat(document.getElementById('tax_amount').value) || 0;
+      const status = document.getElementById('status').value;
+
+      if (!order_id || isNaN(total_amount)) {
+        alert('Vui lòng nhập ID đơn hàng và tổng tiền!');
+        return;
+      }
+
+      const data = { order_id, total_amount, tax_amount, status };
+
+      try {
+        const method = id ? 'PUT' : 'POST';
+        const url = id ? `${apiUrl}/${id}` : apiUrl;
+        const response = await fetch(url, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        if (response.ok) {
+          alert(id ? 'Cập nhật thành công!' : 'Thêm thành công!');
+          bootstrap.Modal.getInstance(document.getElementById('invoiceModal')).hide();
+          loadInvoices();
+        } else {
+          alert('Lỗi khi lưu!');
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Lỗi kết nối!');
+      }
+    }
+
+    async function deleteInvoice(id) {
+      if (!confirm('Xóa hóa đơn này?')) return;
+      try {
+        const response = await fetch(`${apiUrl}/${id}`, { method: 'DELETE' });
+        if (response.ok) {
+          alert('Xóa thành công!');
+          loadInvoices();
+        } else {
+          alert('Lỗi khi xóa!');
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Lỗi kết nối!');
+      }
+    }
+  </script>
+</body>
+</html>
