@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Khuyến mãi - Restaurants Cafe</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/global-style.css">
+  <style> /* Copy style */ </style>
+</head>
+<body onload="loadPromotions()">
+<div class="page-header">
+  <h2>[Restaurants Cafe]</h2>
+  <a href="dashboard.html" class="btn btn-back">
+    <i class="fas fa-arrow-left me-1"></i> Quay lại Trang chủ
+  </a>
+</div>
+  <!-- Sidebar (active cho Khuyến mãi) -->
+
+  <div class="main-content">
+    <h2 class="mb-4">Quản lý Khuyến mãi</h2>
+
+    <div class="card shadow">
+      <div class="card-header">
+        <h5 class="mb-0">Danh sách Khuyến mãi</h5>
+      </div>
+      <div class="card-body">
+        <button class="btn btn-success mb-3" data-bs-toggle="modal" data-bs-target="#promoModal" onclick="prepareAddPromo()">
+          + Thêm khuyến mãi mới
+        </button>
+
+        <div class="table-responsive">
+          <table class="table table-hover table-striped">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Mã</th>
+                <th>Mô tả</th>
+                <th>Loại</th>
+                <th>Giá trị</th>
+                <th>Đơn tối thiểu</th>
+                <th>Thời gian</th>
+                <th>Hoạt động</th>
+                <th>Hành động</th>
+              </tr>
+            </thead>
+            <tbody id="promotionsBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal fade" id="promoModal" tabindex="-1" aria-labelledby="promoModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="promoModalLabel">Thêm khuyến mãi mới</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="promoForm">
+            <input type="hidden" id="promoId">
+            <div class="mb-3">
+              <label class="form-label">Mã khuyến mãi</label>
+              <input type="text" class="form-control" id="code" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Mô tả</label>
+              <textarea class="form-control" id="description"></textarea>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Loại giảm</label>
+              <select class="form-select" id="discount_type" required>
+                <option value="percentage">Phần trăm</option>
+                <option value="fixed">Số tiền cố định</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Giá trị giảm</label>
+              <input type="number" class="form-control" id="discount_value" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Đơn tối thiểu</label>
+              <input type="number" class="form-control" id="min_order_amount">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Ngày bắt đầu</label>
+              <input type="date" class="form-control" id="start_date" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Ngày kết thúc</label>
+              <input type="date" class="form-control" id="end_date" required>
+            </div>
+            <div class="mb-3 form-check">
+              <input type="checkbox" class="form-check-input" id="is_active" checked>
+              <label class="form-check-label" for="is_active">Đang hoạt động</label>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+          <button type="button" class="btn btn-primary" onclick="savePromo()">Lưu</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const apiUrl = 'http://localhost:3001/api/promotions';
+
+    async function loadPromotions() {
+      try {
+        const response = await fetch(apiUrl);
+        if (!response.ok) throw new Error('Lỗi kết nối');
+        const promos = await response.json();
+        const tbody = document.getElementById('promotionsBody');
+        tbody.innerHTML = '';
+
+        promos.forEach(promo => {
+          const row = `
+            <tr>
+              <td>${promo.promo_id}</td>
+              <td>${promo.code}</td>
+              <td>${promo.description || '-'}</td>
+              <td>${promo.discount_type === 'percentage' ? '%' : 'VNĐ'}</td>
+              <td>${promo.discount_value}</td>
+              <td>${promo.min_order_amount || 0}</td>
+              <td>${promo.start_date} → ${promo.end_date}</td>
+              <td>${promo.is_active ? 'Có' : 'Không'}</td>
+              <td>
+                <button class="btn btn-sm btn-warning me-1" onclick="prepareEditPromo(${promo.promo_id}, '${promo.code}', '${promo.description || ''}', '${promo.discount_type}', ${promo.discount_value}, ${promo.min_order_amount || 0}, '${promo.start_date}', '${promo.end_date}', ${promo.is_active})">Sửa</button>
+                <button class="btn btn-sm btn-danger" onclick="deletePromo(${promo.promo_id})">Xóa</button>
+              </td>
+            </tr>
+          `;
+          tbody.innerHTML += row;
+        });
+      } catch (err) {
+        console.error(err);
+        alert('Không thể tải danh sách khuyến mãi!');
+      }
+    }
+
+    function prepareAddPromo() {
+      document.getElementById('promoModalLabel').textContent = 'Thêm khuyến mãi mới';
+      document.getElementById('promoForm').reset();
+      document.getElementById('promoId').value = '';
+      document.getElementById('is_active').checked = true;
+    }
+
+    function prepareEditPromo(id, code, description, discount_type, discount_value, min_order_amount, start_date, end_date, is_active) {
+      document.getElementById('promoModalLabel').textContent = 'Sửa khuyến mãi';
+      document.getElementById('promoId').value = id;
+      document.getElementById('code').value = code;
+      document.getElementById('description').value = description;
+      document.getElementById('discount_type').value = discount_type;
+      document.getElementById('discount_value').value = discount_value;
+      document.getElementById('min_order_amount').value = min_order_amount;
+      document.getElementById('start_date').value = start_date;
+      document.getElementById('end_date').value = end_date;
+      document.getElementById('is_active').checked = !!is_active;
+      const modal = new bootstrap.Modal(document.getElementById('promoModal'));
+      modal.show();
+    }
+
+    async function savePromo() {
+      const id = document.getElementById('promoId').value;
+      const code = document.getElementById('code').value.trim();
+      const description = document.getElementById('description').value.trim();
+      const discount_type = document.getElementById('discount_type').value;
+      const discount_value = parseFloat(document.getElementById('discount_value').value);
+      const min_order_amount = parseFloat(document.getElementById('min_order_amount').value) || 0;
+      const start_date = document.getElementById('start_date').value;
+      const end_date = document.getElementById('end_date').value;
+      const is_active = document.getElementById('is_active').checked ? 1 : 0;
+
+      if (!code || isNaN(discount_value) || !start_date || !end_date) {
+        alert('Vui lòng nhập đầy đủ mã, giá trị giảm và thời gian!');
+        return;
+      }
+
+      const data = { code, description, discount_type, discount_value, min_order_amount, start_date, end_date, is_active };
+
+      try {
+        const method = id ? 'PUT' : 'POST';
+        const url = id ? `${apiUrl}/${id}` : apiUrl;
+        const response = await fetch(url, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        if (response.ok) {
+          alert(id ? 'Cập nhật thành công!' : 'Thêm thành công!');
+          bootstrap.Modal.getInstance(document.getElementById('promoModal')).hide();
+          loadPromotions();
+        } else {
+          alert('Lỗi khi lưu!');
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Lỗi kết nối!');
+      }
+    }
+
+    async function deletePromo(id) {
+      if (!confirm('Xóa khuyến mãi này?')) return;
+      try {
+        const response = await fetch(`${apiUrl}/${id}`, { method: 'DELETE' });
+        if (response.ok) {
+          alert('Xóa thành công!');
+          loadPromotions();
+        } else {
+          alert('Lỗi khi xóa!');
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Lỗi kết nối!');
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Thực đơn - Restaurants Cafe</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="css/global-style.css">
+  <style>
+    body {
+      background: #f8f1e9;
+    }
+    .menu-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 2rem;
+      padding: 2.5rem 0;
+    }
+    .menu-item {
+      background: white;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(139,94,60,0.1);
+      transition: all 0.4s ease;
+      cursor: pointer;
+      position: relative;
+    }
+    .menu-item:hover {
+      transform: translateY(-12px);
+      box-shadow: 0 20px 50px rgba(139,94,60,0.18);
+    }
+    .menu-item img {
+      width: 100%;
+      height: 280px;
+      object-fit: cover;
+      transition: transform 0.6s ease;
+    }
+    .menu-item:hover img {
+      transform: scale(1.08);
+    }
+    .menu-item-info {
+      padding: 1.5rem;
+      text-align: center;
+    }
+    .menu-item-info h3 {
+      font-family: 'Playfair Display', serif;
+      color: #8b5e3c;
+      font-size: 1.7rem;
+      margin-bottom: 0.8rem;
+    }
+    .menu-item-info p {
+      color: #6b7280;
+      font-size: 1rem;
+      margin-bottom: 1rem;
+      line-height: 1.5;
+    }
+    .price {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #d4a373;
+      margin-bottom: 1rem;
+    }
+    .rating {
+      color: #ffc107;
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+    }
+    .rating i {
+      margin: 0 2px;
+    }
+    .btn-add-to-cart {
+      background: linear-gradient(90deg, #28a745, #218838);
+      border: none;
+      padding: 0.7rem 1.5rem;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+    .btn-add-to-cart:hover {
+      background: linear-gradient(90deg, #34d399, #28a745);
+      transform: translateY(-2px);
+    }
+    .cart-icon {
+      position: fixed;
+      top: 20px;
+      right: 30px;
+      background: #d4a373;
+      color: white;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      box-shadow: 0 5px 15px rgba(212,163,115,0.4);
+      cursor: pointer;
+      z-index: 1000;
+      transition: all 0.3s;
+    }
+    .cart-icon:hover {
+      transform: scale(1.1);
+    }
+    .cart-badge {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      background: #dc3545;
+      color: white;
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .cart-modal .modal-dialog {
+      max-width: 600px;
+    }
+    .cart-item {
+      border-bottom: 1px solid #e0d5c0;
+      padding: 1rem 0;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar (dành cho khách hàng) -->
+  <div class="sidebar">
+    <h4 class="text-center mb-4">Restaurants Cafe</h4>
+    <a href="dashboard.html" class="d-flex align-items-center">
+      <i class="fas fa-home me-2"></i> Trang chủ
+    </a>
+    <a href="menu-public.html" class="d-flex align-items-center active">
+      <i class="fas fa-utensils me-2"></i> Thực đơn
+    </a>
+    <!-- Thêm các link khác cho khách nếu cần -->
+  </div>
+
+  <div class="main-content">
+    <div class="page-header d-flex justify-content-between align-items-center mb-4">
+      <h2>Thực đơn</h2>
+      <button class="btn btn-danger btn-sm" onclick="logout()">
+        <i class="fas fa-sign-out-alt me-1"></i> Đăng xuất
+      </button>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h5>Menu đặc biệt hôm nay</h5>
+      </div>
+      <div class="card-body">
+        <div class="menu-grid" id="menuGrid"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Icon giỏ hàng góc phải -->
+  <div class="cart-icon" onclick="showCart()">
+    <i class="fas fa-shopping-cart"></i>
+    <span class="cart-badge" id="cartCount">0</span>
+  </div>
+
+  <!-- Modal Giỏ hàng -->
+  <div class="modal fade" id="cartModal" tabindex="-1" aria-labelledby="cartModalLabel">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="cartModalLabel">Giỏ hàng của bạn</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body" id="cartItems">
+          <!-- Danh sách món sẽ được JS chèn vào -->
+        </div>
+        <div class="modal-footer">
+          <div class="w-100">
+            <h5 class="text-end">Tổng tiền: <span id="cartTotal">0 VNĐ</span></h5>
+            <button class="btn btn-success w-100 mt-2">Thanh toán</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const apiUrl = 'http://localhost:3001/api/menu';
+    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+    // Load menu public
+    async function loadPublicMenu() {
+      try {
+        const res = await fetch(apiUrl);
+        if (!res.ok) throw new Error('Lỗi tải menu');
+        const items = await res.json();
+        const grid = document.getElementById('menuGrid');
+        grid.innerHTML = '';
+
+        items.forEach(item => {
+          const img = item.image_path
+            ? 'http://localhost:3001' + item.image_path
+            : 'https://via.placeholder.com/300x260';
+
+          const rating = (Math.random() * 1 + 4).toFixed(1); // Demo đánh giá 4-5 sao
+
+          const div = document.createElement('div');
+          div.className = 'menu-item';
+          div.innerHTML = `
+            <img src="${img}">
+            <div class="menu-item-info">
+              <h3>${item.name}</h3>
+              <p>${item.description || 'Món ngon đặc trưng'}</p>
+              <div class="rating">
+                ${'★'.repeat(Math.floor(rating))} ${rating > Math.floor(rating) ? '½' : ''} (${rating})
+              </div>
+              <span class="price">${item.price.toLocaleString()} VNĐ</span>
+            </div>
+            <div class="text-center pb-4">
+              <button class="btn btn-add-to-cart" onclick="addToCart(${item.item_id}, '${item.name.replace(/'/g,"\\'")}', ${item.price})">
+                <i class="fas fa-cart-plus me-1"></i> Đặt món
+              </button>
+            </div>
+          `;
+          grid.appendChild(div);
+        });
+        updateCartCount();
+      } catch (err) {
+        console.error(err);
+        document.getElementById('menuGrid').innerHTML = '<p class="text-center text-danger py-5">Không thể tải thực đơn. Vui lòng thử lại sau!</p>';
+      }
+    }
+
+    // Thêm vào giỏ hàng
+    function addToCart(id, name, price) {
+      const existing = cart.find(item => item.id === id);
+      if (existing) {
+        existing.quantity += 1;
+      } else {
+        cart.push({ id, name, price, quantity: 1 });
+      }
+      localStorage.setItem('cart', JSON.stringify(cart));
+      updateCartCount();
+      alert(`${name} đã được thêm vào giỏ hàng!`);
+    }
+
+    // Cập nhật số lượng trên icon giỏ hàng
+    function updateCartCount() {
+      const count = cart.reduce((sum, item) => sum + item.quantity, 0);
+      document.getElementById('cartCount').textContent = count;
+    }
+
+    // Hiển thị giỏ hàng
+    function showCart() {
+      const cartBody = document.getElementById('cartItems');
+      cartBody.innerHTML = '';
+      let total = 0;
+
+      if (cart.length === 0) {
+        cartBody.innerHTML = '<p class="text-center py-4">Giỏ hàng trống</p>';
+      } else {
+        cart.forEach(item => {
+          total += item.price * item.quantity;
+          cartBody.innerHTML += `
+            <div class="cart-item d-flex justify-content-between align-items-center">
+              <div>
+                <strong>${item.name}</strong><br>
+                <small>${item.price.toLocaleString()} VNĐ x ${item.quantity}</small>
+              </div>
+              <div>${(item.price * item.quantity).toLocaleString()} VNĐ</div>
+            </div>
+          `;
+        });
+      }
+
+      document.getElementById('cartTotal').textContent = total.toLocaleString() + ' VNĐ';
+      new bootstrap.Modal(document.getElementById('cartModal')).show();
+    }
+
+    // Đăng xuất
+    function logout() {
+      if (confirm('Bạn có chắc muốn đăng xuất?')) {
+        localStorage.removeItem('isAdmin');
+        localStorage.removeItem('token');
+        localStorage.removeItem('cart'); // Xóa giỏ hàng khi logout
+        alert('Đã đăng xuất!');
+        window.location.href = 'login.html';
+      }
+    }
+
+    // Load menu khi trang mở
+    loadPublicMenu();
+  </script>
+</body>
+</html>
